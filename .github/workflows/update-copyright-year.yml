@@ -1,0 +1,39 @@
+name: Update Copyright
+
+on:
+  schedule:
+    # Runs at 00:00 on January 1st every year
+    - cron: "0 0 1 1 *"
+  workflow_dispatch:
+    # Allows manual run from the Actions tab as well
+    inputs: {}
+
+jobs:
+  update-copyright:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Update copyright year
+        run: |
+          # Get the current year
+          CURRENT_YEAR=$(date +%Y)
+
+          # Replace "© <any 4-digit year> Limpan" with the current year
+          # Adjust index.html if your file has a different name
+          sed -i "s/© [0-9]\{4\} Limpan/© $CURRENT_YEAR Limpan/g" index.html
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html
+          # Only commit if there is a diff
+          if [ -n "$(git diff --cached)" ]; then
+            git commit -m "chore: update copyright year"
+            git push
+          else
+            echo "No changes to commit."
+          fi
